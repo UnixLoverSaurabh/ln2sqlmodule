@@ -1,18 +1,19 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*
 
-import os, sys, getopt
-import unicodedata
+import getopt
+import importlib
+import os
+import sys
+import settings
 
 from Database import Database
 from LangConfig import LangConfig
 from Parser import Parser
 from Thesaurus import Thesaurus
-from StopwordFilter import StopwordFilter
-import settings
 
-reload(sys)
-sys.setdefaultencoding("utf-8")
+importlib.reload(sys)
+
 
 class color:
     PURPLE = '\033[95m'
@@ -26,11 +27,12 @@ class color:
     UNDERLINE = '\033[4m'
     END = '\033[0m'
 
+
 class ln2sql:
     def __init__(self, database_path, input_sentence, language_path, thesaurus_path, json_output_path):
         database = Database()
         database.load(database_path)
-        #database.print_me()
+        database.print_me()     # comment this line, here only for visulation purpose only.
 
         config = LangConfig()
         config.load(language_path)
@@ -43,24 +45,25 @@ class ln2sql:
             parser.set_thesaurus(thesaurus)
 
         queries = parser.parse_sentence(input_sentence)
+        # parser.print_me(parser)
 
         if json_output_path is not None:
             self.remove_json(json_output_path)
             for query in queries:
                 query.print_json(json_output_path)
 
-        if(len(queries) > 1):
-            if settings.DEBUG :
+        if len(queries) > 1:
+            if settings.DEBUG:
                 print('--------- queries is more than one')
             self.query = None
 
             raise Exception('More than one query')
-        else :
+        else:
             self.query = queries[0]
 
-        if settings.DEBUG :
+        if settings.DEBUG:
             for query in queries:
-                print query
+                print(query)
 
     def getQuery(self):
         return self.query
@@ -69,23 +72,25 @@ class ln2sql:
         if os.path.exists(filename):
             os.remove(filename)
 
+
 def print_help_message():
-    if settings.DEBUG :
-        print '\n'
-        print 'Usage:'
-        print '\tpython ln2sql.py -d <path> -l <path> -i <input-sentence> [-t <path>] [-j <path>]'
-        print 'Parameters:'
-        print '\t-h\t\t\tprint this help message'
-        print '\t-d <path>\t\tpath to SQL dump file'
-        print '\t-l <path>\t\tpath to language configuration file'
-        print '\t-i <input-sentence>\tinput sentence to parse'
-        print '\t-j <path>\t\tpath to JSON output file'
-        print '\t-t <path>\t\tpath to thesaurus file'
-        print '\n'
+    if settings.DEBUG:
+        print('\n')
+        print('Usage:')
+        print('\tpython ln2sql.py -d <path> -l <path> -i <input-sentence> [-t <path>] [-j <path>]')
+        print('Parameters:')
+        print('\t-h\t\t\tprint this help message')
+        print('\t-d <path>\t\tpath to SQL dump file')
+        print('\t-l <path>\t\tpath to language configuration file')
+        print('\t-i <input-sentence>\tinput sentence to parse')
+        print('\t-j <path>\t\tpath to JSON output file')
+        print('\t-t <path>\t\tpath to thesaurus file')
+        print('\n')
+
 
 def main(argv):
     # try:
-    opts, args = getopt.getopt(argv,"d:l:i:t:j:")
+    opts, args = getopt.getopt(argv, "d:l:i:t:j:")
     database_path = None
     input_sentence = None
     language_path = None
@@ -106,26 +111,25 @@ def main(argv):
         else:
             print_help_message()
             # sys.exit()
-            raise getopt.GetoptError('ln2sqlmodule : Invalid args received',None)
-    
+            raise getopt.GetoptError('ln2sqlmodule : Invalid args received', None)
+
     if (database_path is None) or (input_sentence is None) or (language_path is None):
-        raise getopt.GetoptError('ln2sqlmodule : Invalid args received',None)
+        raise getopt.GetoptError('ln2sqlmodule : Invalid args received', None)
     else:
         if thesaurus_path is not None:
             thesaurus_path = str(thesaurus_path)
         if json_output_path is not None:
             json_output_path = str(json_output_path)
 
-    #try:
+    # try:
     ln2sqlObj = ln2sql(str(database_path), str(input_sentence), str(language_path), thesaurus_path, json_output_path)
-    
+
     return ln2sqlObj.getQuery()
-    #except Exception, e:
+    # except Exception, e:
     #    print color.BOLD + color.RED + str(e) + color.END
 
     # except getopt.GetoptError:
     #     print_help_message()
-
 
 # if __name__ == '__main__':
 #     main(sys.argv[1:])

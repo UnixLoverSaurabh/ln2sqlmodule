@@ -1,14 +1,11 @@
-# -*- coding: utf-8 -*
-
 import sys
 import re
-import unicodedata
-
-from Table import Table
+import importlib
 import settings
 
-reload(sys)
-sys.setdefaultencoding("utf-8")
+from Table import Table
+
+importlib.reload(sys)
 
 
 class color:
@@ -66,15 +63,23 @@ class Database:
         with open(path) as f:
             content = f.read()
 
-            tables_string = [p.split(';')[0]
-                             for p in content.split('CREATE') if ';' in p]
+            # tables_string = [p.split(';')[0] for p in content.split('CREATE') if ';' in p]
+            tables_string = []
+            for p in content.split('CREATE'):
+                if ';' in p:
+                    tables_string.append(p.split(';')[0])
+
             for table_string in tables_string:
                 if 'TABLE' in table_string:
                     table = self.create_table(table_string)
                     self.add_table(table)
 
-            alter_table_string = [p.split(';')[0]
-                                  for p in content.split('ALTER') if ';' in p]
+            # alter_table_string = [p.split(';')[0] for p in content.split('ALTER') if ';' in p]
+            alter_table_string = []
+            for p in content.split('ALTER'):
+                if ';' in p:
+                    alter_table_string.append(p.split(';')[0])
+
             for s in alter_table_string:
                 if 'TABLE' in s:
                     self.alter_table(s)
@@ -112,13 +117,12 @@ class Database:
         for line in lines:
             if 'PRIMARY KEY' in line:
                 table_name = re.search("TABLE `(\w+)`", line).group(1)
-                table = [t for t in self.tables if t.get_name() == table_name][
-                    0]
+                table = [t for t in self.tables if t.get_name() == table_name][0]
 
-                primary_key_columns = re.findall(
-                    "PRIMARY KEY \(`(\w+)`\)", line)
+                primary_key_columns = re.findall("PRIMARY KEY \(`(\w+)`\)", line)
                 for primary_key_column in primary_key_columns:
                     table.add_primary_key(primary_key_column)
+
             elif 'FOREIGN KEY' in line:
                 table_name = re.search("TABLE `(\w+)`", line).group(1)
                 table = [t for t in self.tables if t.get_name() == table_name][
@@ -139,7 +143,7 @@ class Database:
                 for column in table.columns:
                     if column.name in table.primary_keys:
                         print("| 🔑 %31s           |" % (
-                            color.BOLD + column.name + ' (' + column.type + ')' + color.END))
+                                color.BOLD + column.name + ' (' + column.type + ')' + color.END))
                     else:
                         print("|   %23s           |" %
                               (column.name + ' (' + column.type + ')'))

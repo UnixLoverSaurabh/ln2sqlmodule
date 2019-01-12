@@ -102,6 +102,8 @@ ENV/
 
 .DS_Store
 
+.idea
+
 output.json
 
 .idea

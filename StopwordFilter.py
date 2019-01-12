@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*
-
+import importlib
 import sys
 import unicodedata
 
-reload(sys)
-sys.setdefaultencoding("utf-8")
+importlib.reload(sys)
+
 
 class StopwordFilter:
-    
+
     def __init__(self):
         self.list = []
-    
+
     def add_stopword(self, word):
         self.list.append(word)
 
     def get_stopword_list(self):
         return self.list
-    
+
     def filter(self, sentence):
         tmp_sentence = []
         for word in sentence:
@@ -26,7 +26,7 @@ class StopwordFilter:
         return tmp_sentence
 
     def remove_accents(self, string):
-        nkfd_form = unicodedata.normalize('NFKD', unicode(string))
+        nkfd_form = unicodedata.normalize('NFKD', str(string))
         return u"".join([c for c in nkfd_form if not unicodedata.combining(c)])
 
     def load(self, lang):
