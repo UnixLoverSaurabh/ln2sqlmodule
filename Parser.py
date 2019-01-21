@@ -74,7 +74,7 @@ class SelectParser(Thread):
                     self.select_object.add_column(None, 'COUNT')
                 else:
                     self.select_object.add_column(None, None)
-                print("self.select_object : ", self.select_object)
+                print(color.BOLD + color.PURPLE + "is_count : ", str(is_count), "\nself.select_object : ", str(self.select_object) + color.END)
             else:
                 select_phrases = []
                 previous_index = 0
